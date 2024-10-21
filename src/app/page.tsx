@@ -7,14 +7,20 @@ import { client } from "./client";
 import { defineChain, getContract, toEther } from "thirdweb";
 import { sepolia } from "thirdweb/chains";
 import { getContractMetadata } from "thirdweb/extensions/common";
-import { claimTo, getActiveClaimCondition, getTotalClaimedSupply, nextTokenIdToMint } from "thirdweb/extensions/erc721";
+import { claimTo, getActiveClaimCondition, getTotalClaimedSupply, nextTokenIdToMint, transferFrom } from "thirdweb/extensions/erc721";
 import { useState } from "react";
+import NFTTransferModal from "@/components/modal/NFTTransferModal";
+
+const NEXT_PUBLIC_NFT_ADDRESS = process.env.NEXT_PUBLIC_NFT_ADDRESS || "";
 
 export default function Home() {
   const account = useActiveAccount();
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [claimedTokenId, setClaimedTokenId] = useState<bigint | undefined>(undefined);
+
   // Replace the chain with the chain you want to connect to
-  const chain = defineChain( sepolia );
+  const chain = defineChain(sepolia);
 
   const [quantity, setQuantity] = useState(1);
 
@@ -22,22 +28,22 @@ export default function Home() {
   const contract = getContract({
     client: client,
     chain: chain,
-    address: "0x7276665BD6fF6749613C1CbC4f7c832259bEBC9E"
+    address: NEXT_PUBLIC_NFT_ADDRESS
   });
 
-  const { data: contractMetadata, isLoading: isContractMetadataLaoding } = useReadContract( getContractMetadata,
+  const { data: contractMetadata, isLoading: isContractMetadataLaoding } = useReadContract(getContractMetadata,
     { contract: contract }
   );
 
-  const { data: claimedSupply, isLoading: isClaimedSupplyLoading } = useReadContract( getTotalClaimedSupply,
-    { contract: contract}
-  );
-
-  const { data: totalNFTSupply, isLoading: isTotalSupplyLoading } = useReadContract( nextTokenIdToMint,
+  const { data: claimedSupply, isLoading: isClaimedSupplyLoading } = useReadContract(getTotalClaimedSupply,
     { contract: contract }
   );
 
-  const { data: claimCondition } = useReadContract( getActiveClaimCondition,
+  const { data: totalNFTSupply, isLoading: isTotalSupplyLoading } = useReadContract(nextTokenIdToMint,
+    { contract: contract }
+  );
+
+  const { data: claimCondition } = useReadContract(getActiveClaimCondition,
     { contract: contract }
   );
 
@@ -46,9 +52,16 @@ export default function Home() {
     return toEther(BigInt(total));
   }
 
+  const showMintedNFTModal = (tokenId: string) => {
+    console.log("totalNFTSupply:", totalNFTSupply);
+
+    setClaimedTokenId(totalNFTSupply);
+    setIsModalOpen(true);
+  };
+
   return (
     <main className="p-4 pb-10 min-h-[100vh] flex items-center justify-center container max-w-screen-lg mx-auto">
-	    <div className="py-20 text-center">
+      <div className="py-20 text-center">
         <Header />
         <ConnectButton
           client={client}
@@ -84,8 +97,8 @@ export default function Home() {
               className="bg-black text-white px-4 py-2 rounded-md mr-4"
               onClick={() => setQuantity(Math.max(1, quantity - 1))}
             >-</button>
-            <input 
-              type="number" 
+            <input
+              type="number"
               value={quantity}
               onChange={(e) => setQuantity(parseInt(e.target.value))}
               className="w-10 text-center border border-gray-300 rounded-md bg-black text-white"
@@ -103,6 +116,7 @@ export default function Home() {
             })}
             onTransactionConfirmed={async () => {
               alert("NFT Claimed!");
+              showMintedNFTModal("1");
               setQuantity(1);
             }}
           >
@@ -110,6 +124,7 @@ export default function Home() {
           </TransactionButton>
         </div>
       </div>
+      <NFTTransferModal contractAddress={NEXT_PUBLIC_NFT_ADDRESS} open={isModalOpen} onClose={() => setIsModalOpen(false)} tokenId={claimedTokenId as bigint} />
     </main>
   );
 }
