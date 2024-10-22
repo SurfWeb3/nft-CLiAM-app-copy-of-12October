@@ -63,6 +63,9 @@ const NFTTransferModal: React.FC<NFTTransferModalProps> = ({
                 <Typography variant="body2" color="text.secondary" paragraph style={{ color: 'rgba(0, 0, 0, 0.7)' }}>
                     Send your newly claimed NFT to another wallet address.
                 </Typography>
+                <Typography variant="body2" color="text.secondary" paragraph style={{ color: 'rgba(0, 0, 0, 0.7)' }}>
+                    Token Id: {tokenId?.toString()}
+                </Typography>
                 <TextField
                     fullWidth
                     variant="outlined"
@@ -71,6 +74,7 @@ const NFTTransferModal: React.FC<NFTTransferModalProps> = ({
                     onChange={(e) => setRecipientAddress(e.target.value)}
                     margin="normal"
                     size='small'
+                    className='mt-[8px]'
                     InputProps={{
                         style: { color: 'black' }
                     }}
@@ -88,6 +92,8 @@ const NFTTransferModal: React.FC<NFTTransferModalProps> = ({
                         })}
                         onTransactionConfirmed={async () => {
                             alert("NFT Transfered Successfully!");
+                            setRecipientAddress("");
+                            setIsTransferring(false);
                             onClose();
                         }}
                     >

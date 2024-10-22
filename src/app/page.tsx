@@ -85,29 +85,6 @@ export default function Home() {
               </p>
             </>
           )}
-          {isClaimedSupplyLoading || isTotalSupplyLoading ? (
-            <p>Loading...</p>
-          ) : (
-            <p className="text-lg mt-2 font-bold">
-              Total NFT Supply: {claimedSupply?.toString()}/{totalNFTSupply?.toString()}
-            </p>
-          )}
-          <div className="flex flex-row items-center justify-center my-4">
-            <button
-              className="bg-black text-white px-4 py-2 rounded-md mr-4"
-              onClick={() => setQuantity(Math.max(1, quantity - 1))}
-            >-</button>
-            <input
-              type="number"
-              value={quantity}
-              onChange={(e) => setQuantity(parseInt(e.target.value))}
-              className="w-10 text-center border border-gray-300 rounded-md bg-black text-white"
-            />
-            <button
-              className="bg-black text-white px-4 py-2 rounded-md mr-4"
-              onClick={() => setQuantity(quantity + 1)}
-            >+</button>
-          </div>
           <TransactionButton
             transaction={() => claimTo({
               contract: contract,
@@ -119,6 +96,7 @@ export default function Home() {
               showMintedNFTModal("1");
               setQuantity(1);
             }}
+            className="mt-4"
           >
             {`Claim NFT (${getPrice(quantity)} ETH)`}
           </TransactionButton>
